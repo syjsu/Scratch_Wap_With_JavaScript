@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Scratch作品</title>
+    <!-- 自适应 禁用屏幕缩放 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=500,user-scalable=no,maximum-scale=1" width="500">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="stylesheet" href="./lib/player.css">
+    <link rel="stylesheet" href="./lib/wx-mp.css">
+    <script src="./lib/jquery.min.js"></script>
+    <!-- 字体修改 -->
+    <style type="text/css">
+    body,
+    button,
+    input,
+    select,
+    textarea,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-family: Microsoft YaHei, '宋体', Tahoma, Helvetica, Arial, "\5b8b\4f53", sans-serif;
+    }
+    </style>
+    <style type="text/css">
+    body {
+        width: 480px;
+        padding: 0;
+        margin: 5px auto;
+        overflow: hidden;
+        background: #fff;
+        font-family: sans-serif;
+        color: #000;
+    }
+    </style>
+</head>
+
+<body>
+    <div id="share" style="float: right;width:1px;height:1px;border-radius:1px;"></div>
+    <div class="area" id="dropbox">
+        <div class="area" id="title-area" style="display:none;text-align:center;">
+            <p>正在加载组件，请稍后&hellip;</p>
+        </div>
+        <!-- 播放器 -->
+        <div class="area" id="player-area">
+            <!-- 1.上面的控制栏 -->
+            <div class="controls">
+                <span class="stop"></span>
+                <span class="pause"></span>
+                <span class="flag" title="Shift+click to enable turbo mode."></span>
+                <div class="turbo">加速模式</div>
+                <span class="full-screen"></span>
+            </div>
+            <!-- 2.播放器本体 -->
+            <div class="player" style="">
+                <div id="preloader">
+                    <div id="preloader-progress">
+                        <div class="progress-bar" id="preloader-progress-bar"></div>
+                    </div>
+                    <div id="preloader-caption">正在加载中，请稍后&hellip;</div>
+                    <div id="preloader-details"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>
+    .box {
+        z-index: -1;
+        border: solid rgb(0, 0, 0) 1px;
+        border-radius: 50px;
+        padding: 25px;
+        margin-top: 25px;
+        margin-left: 5px;
+        margin-right: 5px;
+    }
+
+    .button_arrow {
+        width: 70px!important;
+        height: 70px!important;
+        float: left!important;
+        border: solid rgb(150, 150, 150) 5px;
+        border-radius: 10px;
+        opacity: 0.75;
+    }
+
+    .button_space {
+        width: 120px!important;
+        height: 120px!important;
+        float: right!important;
+        border: solid rgb(150, 150, 150) 4px;
+        border-radius: 60px;
+        opacity: 0.75;
+    }
+
+    .noselect {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+    </style>
+    <div class="noselect box" style="height: 240px!important;width: auto!important;">
+        <div style="float:left!important;height: 240px!important;width: 240px;">
+            <div class="button_arrow" id="_up" style="margin-left:80px;margin-right:80px;background-color:yellow"></div>
+            <div class="button_arrow" id="_left" style="background-color:blue"></div>
+            <div class="button_arrow" id="_right" style="margin-left:80px;background-color:red"></div>
+            <div class="button_arrow" id="_down" style="margin-left:80px;background-color:green"></div>
+        </div>
+        <div style="float:right!important;height: 240px!important;">
+            <div class="button_space" id="_space" style="margin-top:60px;background-color:purple"></div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+    // 按钮事件
+    var mystage;
+    var curKey = 0;
+
+    function buttonUp(e = 0) {
+        try {
+            if (e == 0) {
+                return;
+            }
+            // console.log("release" + e)
+            mystage.keys[e];
+            mystage.keys.any--;
+            mystage.keys[e] = !1;
+            curKey = 0;
+        } catch (e) {
+            console.log(e)
+        }
+    }
+
+    function buttonDown(e) {
+        try {
+            if (curKey == e) {
+                return;
+            } else {
+                if (curKey != 0) {
+                    buttonUp(curKey);
+                }
+                mystage.keys[e];
+                mystage.keys.any++;
+                mystage.keys[e] = !0;
+                mystage.trigger("whenKeyPressed", e);
+                curKey = e;
+                // console.log("press" + e)
+            }
+        } catch (e) {
+            console.log(e)
+        }
+    }
+
+    $("#_up").on("touchstart mousedown", function() { buttonDown(38) });
+    $("#_up").on("touchend mouseup", function() { buttonUp(38) });
+    $("#_left").on("touchstart mousedown", function() { buttonDown(37) });
+    $("#_left").on("touchend mouseup", function() { buttonUp(37) });
+    $("#_right").on("touchstart mousedown", function() { buttonDown(39) });
+    $("#_right").on("touchend mouseup", function() { buttonUp(39) });
+    $("#_down").on("touchstart mousedown", function() { buttonDown(40) });
+    $("#_down").on("touchend mouseup", function() { buttonUp(40) });
+    $("#_space").on("touchstart mousedown", function() { buttonDown(32) });
+    $("#_space").on("touchend mouseup", function() { buttonUp(32) });
+
+    </script>
+    <script>
+    //拖拽事件
+    var dropbox = document.getElementById("dropbox");
+    dropbox.addEventListener("dragenter", function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    dropbox.addEventListener("dragover", function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    dropbox.addEventListener("drop", function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        var dt = e.dataTransfer;
+        var files = dt.files;
+        console.log(files[0]);
+        var request = P.IO.loadSB2File(files[0]);
+        if (request) {
+            P.player.showProgress(request, function(stage) {
+                stage.triggerGreenFlag();
+            });
+        }
+    });
+    </script>
+    <script src="./lib/jszip.min.js"></script>
+    <script src="./lib/rgbcolor.js"></script>
+    <script src="./lib/StackBlur.js"></script>
+    <script src="./lib/canvg.js"></script>
+    <script src="./lib/phosphorus.js"></script>
+    <script src="./lib/player.js"></script>
+    <script>
+    (function() {
+        'use strict';
+
+        var titleArea = document.querySelector('#title-area');
+        var playerArea = document.querySelector('#player-area');
+        playerArea.style.height = 'auto';
+        var titleAreaHeight = titleArea.offsetHeight;
+        var playerAreaHeight = playerArea.offsetHeight;
+        playerArea.style.height = 0;
+        var progressBar = document.querySelector('.progress-bar');
+        var player = document.querySelector('.player');
+        var timeout;
+
+        loadZipFileFronUrl("default.sb2");
+        // loadZipFileFronUrl(window.atob(decodeURIComponent(window.location.hash.substring(1))));
+        console.log(document.URL);
+        setTimeout(function() {
+            function setTransition(el) {
+                el.style.WebkitTransition =
+                    el.style.MozTransition =
+                    el.style.OTransition =
+                    el.style.transition = 'height 0.2s';
+            }
+            setTransition(titleArea);
+            setTransition(playerArea);
+        });
+
+        function show(id) {
+            titleArea.style.height = id ? 0 : titleAreaHeight + 'px';
+            playerArea.style.height = id ? playerAreaHeight + 'px' : 0
+            if (!id) urlInput.focus();
+        }
+
+        function loadZipFileFronUrl(url) {
+            show('zip');
+            var xhr = new XMLHttpRequest();
+            xhr.onprogress = updateProgress;
+            xhr.upload.onprogress = updateProgress;
+
+            function updateProgress(event) {
+                if (event.lengthComputable) {
+                    var percentComplete = event.loaded / event.total;
+                    // console.log("下载进度" + percentComplete + "下载体积" + event.loaded);
+                    $("#preloader-progress-bar").css("width", percentComplete * 100 + "%");
+                    $("#preloader-caption").html("加载中 " + (percentComplete * 100).toFixed(0) + "%");
+                    // $("#preloader-caption").html("已下载" + (percentComplete * 100).toFixed(0) + "% 总大小" + (event.total / 1024 / 1024).toFixed(2) + "MB");
+                }
+            }
+            xhr.open("get", url, true);
+            xhr.responseType = "blob";
+            xhr.onload = function() {
+                if (this.status == 200) {
+                    var request = P.IO.loadSB2File(this.response);
+                    if (request) {
+                        P.player.showProgress(request, function(stage) {
+                            $("#preloader").hide();
+                            stage.triggerGreenFlag();
+                            mystage = stage;
+                        });
+                    }
+                }
+            }
+            xhr.send();
+        }
+    }());
+    </script>
+</body>
+
+</html>
